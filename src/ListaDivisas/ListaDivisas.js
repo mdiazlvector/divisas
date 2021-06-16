@@ -1,56 +1,57 @@
 import React from 'react';
+import './ListaDivisas.css';
+import Divisa from "../divisa/divisa";
 
 class ListaDivisas extends React.Component {
-constructor(props) {
-    super(props);
 
-    this.state = {
-        listadoVisible: true,
-        divisas: {},
-        date: '',
+    constructor(props) {
+        super(props);
+        this.state = {
+            divisas: [],
         }
-
-        this.cambiaVisibilidadLista = this.cambiaVisibilidadLista.bind(this);
     }
 
     componentDidMount() {
+        this.getData();
+    }
 
-        const url = 'https://api.frankfurter.app/latest';
+    getData() {
+        const url = "https://api.frankfurter.app/latest";
         fetch(url)
-            .then((response ) => response.json())
+            .then((respose) => respose.json())
             .then((data) => {
+                console.log(data);
+
                 this.setState({
                     divisas: data.rates,
-                    date: data.date,
-                })
+                    fecha: this.convertirFecha(data.date),
+                });
             })
-    }
-    cambiaVisibilidadLista(event) {
-        const esVisible = this.state.listadoVisible;
-        this.setState( {
-            listadoVisible: !esVisible
-        })
     }
 
-    render(){
-        let listado;
-        if (this.state.listadoVisible) {
-            const items = Object.keys(this.state.divisas).map((key) => {
-                return <li key={key}>{key}: {this.state.divisas[key]}</li>
-            })
-            listado = <div><h2>Listado de divisas</h2><ul>{items}</ul></div>
-        }
-        return(
-            <div>
-            <h1>
-                Hola, {this.props.nombre}
-            </h1>
-                <h2>{this.state.date}</h2>
-            <button onClick={this.cambiaVisibilidadLista}>Ver listado</button>
-                { listado }
-            </div>
-            )
+    convertirFecha (fechaCadena) {
+        console.log(fechaCadena);
+        const fechaNumber = Date.parse(fechaCadena);
+        console.log("Unix:" + fechaNumber);
+        const fecha = new Date(fechaNumber);
+        console.log("ISO:" + fecha.toISOString());
+        return `${fecha.getDate()}/${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
+    }
+
+    render() {
+        const divisas = this.state.divisas;
+        const items = Object.keys(divisas).map((nombreDivisa) => {
+            return <Divisa nombre={nombreDivisa} valor={divisas[nombreDivisa]} key={nombreDivisa}></Divisa>
+        });
+        return (
+            <main className="listaDivisas">
+                <h2>Fecha: {this.state.fecha}</h2>
+                <ul>
+                    { items }
+                </ul>
+            </main>
+        );
     }
 }
-export default ListaDivisas;
 
+export default ListaDivisas;
